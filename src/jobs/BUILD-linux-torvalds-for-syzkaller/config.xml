@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.8.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>git://192.168.0.115/torvalds/linux.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.CloneOption>
+        <shallow>true</shallow>
+        <noTags>false</noTags>
+        <reference></reference>
+        <depth>1</depth>
+        <honorRefspec>false</honorRefspec>
+      </hudson.plugins.git.extensions.impl.CloneOption>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>echo CONFIG_KCOV=y &gt; syzkaller.cfg
+echo CONFIG_DEBUG_INFO=y &gt;&gt; syzkaller.cfg
+echo CONFIG_KASAN=y &gt;&gt; syzkaller.cfg
+echo CONFIG_KASAN_INLINE=y &gt;&gt; syzkaller.cfg
+scripts/kconfig/merge_config.sh arch/x86/configs/x86_64_defconfig kernel/configs/kvm_guest.config syzkaller.cfg
+make CC=gcc-7
+# make CC=gcc-7 INSTALL_MOD_PATH=. modules_install
+# make_ext4fs -l 256M modules.ext4 lib/modules
+
+mkdir -p &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp arch/x86_64/boot/bzImage &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp vmlinux &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+test -e /var/www/html/snapshot/$JOB_BASE_NAME/current &amp;&amp; rm /var/www/html/snapshot/$JOB_BASE_NAME/current
+ln -s $BUILD_ID /var/www/html/snapshot/$JOB_BASE_NAME/current
+
+echo $GIT_COMMIT &gt; commit.txt</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

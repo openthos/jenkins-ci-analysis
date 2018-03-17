@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>curl http://192.168.0.115/snapshot/BUILD-linux-torvalds-for-syzkaller/current/bzImage &gt; bzImage
+test -e ubuntu.img || curl http://192.168.0.115/jenkins-data/ubuntu/ubuntu.gz | gunzip &gt; ubuntu.img
+
+timeout 400 qemu-system-x86_64 \
+-enable-kvm \
+-kernel bzImage \
+-m 4096 \
+-hda ubuntu.img \
+--vnc :1 \
+-nographic \
+-append &quot;root=/dev/sda rw console=ttyS0&quot; | tee validate.txt
+
+test -z &quot;`grep &quot;Started Boot complate&quot; validate.txt`&quot; &amp;&amp; false
+true</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.vncviewer.VncViewerBuildWrapper plugin="vncviewer@1.5">
+      <vncServ>192.168.0.115:5901</vncServ>
+    </org.jenkinsci.plugins.vncviewer.VncViewerBuildWrapper>
+  </buildWrappers>
+</project>

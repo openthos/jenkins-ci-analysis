@@ -1,0 +1,8 @@
+/scripts/local-bottom/cryptopensc "$@"
+[ -e /conf/param.conf ] && . /conf/param.conf
+/scripts/local-bottom/ifdown "$@"
+[ -e /conf/param.conf ] && . /conf/param.conf
+/scripts/local-bottom/jenkins "$@"
+[ -e /conf/param.conf ] && . /conf/param.conf
+/scripts/local-bottom/ntfs_3g "$@"
+[ -e /conf/param.conf ] && . /conf/param.conf

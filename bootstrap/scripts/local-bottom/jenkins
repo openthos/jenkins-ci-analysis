@@ -1,0 +1,60 @@
+#!/bin/sh
+
+PREREQ=""
+
+prereqs() {
+    echo "$PREREQ"
+}
+
+case "$1" in
+    prereqs)
+        prereqs
+        exit 0
+    ;;
+esac
+
+IPADDR=""
+
+# Init Ethernet
+for IFACE in /sys/class/net/*; do
+    [ -e "$IFACE" ] || continue
+    IFACE="${IFACE#/sys/class/net/}"
+    [ $IFACE = "lo" ] && continue
+
+    ifconfig $IFACE up
+    dhclient $IFACE
+    IPADDR=`ifconfig $IFACE | sed -n '/inet addr/s/^[^:]*:\([0-9.]\{7,15\}\) .*/\1/p'`
+    break;
+done
+
+export SNAPSHOT_SERVER="http://192.168.0.115/snapshot"
+export JENKINS_BUILD_ID="current"
+export JENKINS_URL="http://192.168.0.239:8080"
+export DISK_UUID="86AF-B9CE"
+export JENKINS_USERPWD="admin:3831dfeaf296e098e760ea1696daa10f"
+export JENKINS_JOB_NAME="BUILD-openthos-5.1"
+
+nc -l -p 9876 -u -c "true"
+
+test -e /mnt || mkdir -p /mnt
+mount -t vfat /dev/disk/by-uuid/$DISK_UUID /mnt
+
+test -e /mnt/efi/boot || mkdir -p /mnt/efi/boot
+
+curl "$SNAPSHOT_SERVER/$JENKINS_JOB_NAME/$JENKINS_BUILD_ID/grub.cfg" > /mnt/efi/boot/grub.cfg
+curl "$SNAPSHOT_SERVER/$JENKINS_JOB_NAME/$JENKINS_BUILD_ID/bootia32.efi" > /mnt/efi/boot/bootia32.efi
+curl "$SNAPSHOT_SERVER/$JENKINS_JOB_NAME/$JENKINS_BUILD_ID/bootx64.efi" > /mnt/efi/boot/bootx64.efi
+curl "$SNAPSHOT_SERVER/$JENKINS_JOB_NAME/$JENKINS_BUILD_ID/ramdisk.img" > /mnt/ramdisk.img
+curl "$SNAPSHOT_SERVER/$JENKINS_JOB_NAME/$JENKINS_BUILD_ID/initrd.img" > /mnt/initrd.img
+curl "$SNAPSHOT_SERVER/$JENKINS_JOB_NAME/$JENKINS_BUILD_ID/install.img" > /mnt/install.img
+curl "$SNAPSHOT_SERVER/$JENKINS_JOB_NAME/$JENKINS_BUILD_ID/system.sfs" > /mnt/system.sfs
+curl "$SNAPSHOT_SERVER/$JENKINS_JOB_NAME/$JENKINS_BUILD_ID/kernel" > /mnt/kernel
+
+sed -i 's/^set timeout=60/set timeout=0/g' /mnt/efi/boot/grub.cfg
+
+sync
+umount /mnt
+
+# curl -u admin:3831dfeaf296e098e760ea1696daa10f -X POST "http://192.168.0.239:8080/job/VALIDATE-openthos-5.1-phy/buildWithParameters?token=3831dfeaf296e098e760ea1696daa10f&CLIENT_IPADDR=$IPADDR"
+
+reboot

@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>validate&amp;&amp;kafl</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>true</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>curl --user &apos;admin:6bb07ee21b6cd7707fceb48440a0d10f&apos; $JENKINS_URL/job/linux/ws/arch/x86_64/boot/bzImage &gt; bzImage
+/home/jenkins/jenkins/run_kAFL.sh bzImage `curl --user &apos;admin:6bb07ee21b6cd7707fceb48440a0d10f&apos; $JENKINS_URL/job/linux/ws/commit.txt`</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

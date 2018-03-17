@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>qemu||master</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command># kvm -m 4096 -cdrom openthos_64_7.1.iso -kernel kernel -initrd initrd.img -append &quot;root=/dev/ram0 androidboot.selinux=permissive buildvariant=userdebug quiet&quot; -net user,hostfwd=tcp::5555-:5555 -net nic -vnc :2 -nographic
+
+test -e vm.pid &amp;&amp; kill $(cat vm.pid) || true
+rm -f vm.pid
+curl http://192.168.0.115/snapshot/BUILD-openthos-5.1/current/android_x86_64.iso &gt; android_x86_64.iso
+curl http://192.168.0.115/snapshot/BUILD-openthos-5.1/current/kernel &gt; kernel
+curl http://192.168.0.115/snapshot/BUILD-openthos-5.1/current/initrd.img &gt; initrd.img
+
+kvm -m 4096 \
+    -cdrom android_x86_64.iso \
+    -kernel kernel \
+    -initrd initrd.img \
+    -append &quot;root=/dev/ram0 androidboot.hardware=android_x86_64 nomodeset vga=788 SRC= DATA= BOOT_IMAGE=/kernel&quot; \
+    -net user,hostfwd=tcp::5555-:5555 \
+    -net nic \
+    -vnc :2 \
+    -pidfile vm.pid \
+    -daemonize \
+    2&gt;&amp;1 | tee vm.log
+
+test -e Uitest || curl http://192.168.0.87/jenkins-data/Uitest.tar.gz | tar zxv
+
+sleep 30
+cd Uitest
+bash testgui.sh
+kill $(cat vm.pid) || true</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.vncviewer.VncViewerBuildWrapper plugin="vncviewer@1.5">
+      <vncServ>localhost:5902</vncServ>
+    </org.jenkinsci.plugins.vncviewer.VncViewerBuildWrapper>
+  </buildWrappers>
+</project>

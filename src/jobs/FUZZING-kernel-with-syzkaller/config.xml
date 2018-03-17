@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>curl http://192.168.0.115/snapshot/BUILD-linux-torvalds-for-syzkaller/current/bzImage &gt; bzImage
+curl http://192.168.0.115/snapshot/BUILD-linux-torvalds-for-syzkaller/current/ws/vmlinux &gt; vmlinux
+test -e wheezy.img || curl http://192.168.0.115/jenkins-data/debian/wheezy.gz | gunzip &gt; wheezy.img
+test -e ssh || mkdir ssh
+curl http://192.168.0.115/jenkins-data/debian/ssh/id_rsa &gt; ssh/id_rsa
+chmod 600 ssh/id_rsa
+
+cat &lt;&lt; EOF &gt; qemu.cfg
+{
+    &quot;target&quot;: &quot;linux/amd64&quot;,
+    &quot;http&quot;: &quot;192.168.0.115:56741&quot;,
+    &quot;workdir&quot;: &quot;.syzkaller&quot;,
+    &quot;vmlinux&quot;: &quot;vmlinux&quot;,
+    &quot;image&quot;: &quot;wheezy.img&quot;,
+    &quot;sshkey&quot;: &quot;ssh/id_rsa&quot;,
+    &quot;syzkaller&quot;: &quot;/opt/google/syzkaller&quot;,
+    &quot;procs&quot;: 8,
+    &quot;type&quot;: &quot;qemu&quot;,
+    &quot;vm&quot;: {
+        &quot;count&quot;: 4,
+        &quot;kernel&quot;: &quot;bzImage&quot;,
+        &quot;cpu&quot;: 2,
+        &quot;mem&quot;: 2048
+    }
+}
+EOF
+
+/opt/google/syzkaller/bin/syz-manager -config=qemu.cfg</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

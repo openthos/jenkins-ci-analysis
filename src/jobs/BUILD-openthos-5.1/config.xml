@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.repo.RepoScm" plugin="repo@1.10.7">
+    <manifestRepositoryUrl>git://192.168.0.185/lollipop-x86/manifest.git</manifestRepositoryUrl>
+    <repoUrl>https://aosp.tuna.tsinghua.edu.cn/tools/repo</repoUrl>
+    <manifestBranch>multiwindow</manifestBranch>
+    <jobs>0</jobs>
+    <depth>1</depth>
+    <currentBranch>true</currentBranch>
+    <resetFirst>false</resetFirst>
+    <quiet>true</quiet>
+    <forceSync>false</forceSync>
+    <trace>false</trace>
+    <showAllChanges>false</showAllChanges>
+    <noTags>false</noTags>
+    <ignoreProjects class="linked-hash-set">
+      <string></string>
+    </ignoreProjects>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>echo &apos;export PATH=/usr/lib/jvm/java-1.7.0-openjdk-amd64/bin:$PATH;export USER=$(whoami);source build/envsetup.sh;lunch android_x86_64-userdebug;make iso_img -j16&apos; | /bin/bash
+
+mkdir -p &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+
+cp out/target/product/x86_64/boot/efi/boot/grub.cfg &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp bootable/newinstaller/install/grub2/efi/boot/bootia32.efi &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp bootable/newinstaller/install/grub2/efi/boot/bootx64.efi &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp out/target/product/x86_64/ramdisk.img &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp out/target/product/x86_64/initrd.img &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp out/target/product/x86_64/install.img &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp out/target/product/x86_64/system.sfs &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp out/target/product/x86_64/kernel &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+cp out/target/product/x86_64/android_x86_64.iso &quot;/var/www/html/snapshot/$JOB_BASE_NAME/$BUILD_ID&quot;
+
+test -e /var/www/html/snapshot/$JOB_BASE_NAME/current &amp;&amp; rm /var/www/html/snapshot/$JOB_BASE_NAME/current
+ln -s $BUILD_ID /var/www/html/snapshot/$JOB_BASE_NAME/current</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

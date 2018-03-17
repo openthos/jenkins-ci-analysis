@@ -1,0 +1,23 @@
+#!/bin/sh
+
+PREREQ=""
+
+prereqs() {
+    echo "$PREREQ"
+}
+
+case "$1" in
+    prereqs)
+        prereqs
+        exit 0
+    ;;
+esac
+
+[ "$DROPBEAR_IFDOWN" != none ] || exit 0
+for IFACE in /sys/class/net/${DROPBEAR_IFDOWN:-*}; do
+    [ -e "$IFACE" ] || continue
+    IFACE="${IFACE#/sys/class/net/}"
+    ip link    set   dev "$IFACE" down
+    ip address flush dev "$IFACE"
+    ip route   flush dev "$IFACE"
+done

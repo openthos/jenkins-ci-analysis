@@ -1,0 +1,4 @@
+# Soft dependencies extracted from modules themselves.
+softdep vfio post: vfio_iommu_type1 vfio_iommu_spapr_tce
+softdep mdev post: vfio_mdev
+softdep libcrc32c pre: crc32c
